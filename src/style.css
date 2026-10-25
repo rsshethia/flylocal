@@ -216,7 +216,7 @@ body.flying #mapWrap { height: 100dvh; min-height: 0; border: 0; border-radius: 
 .steps li::before { content: counter(step, decimal-leading-zero); font: 500 11px/1 var(--mono); color: var(--accent); letter-spacing: 0.08em; }
 .steps li b { font: 600 13px/1.4 var(--sans); color: var(--ink); }
 .steps li span { font-size: 12.5px; color: var(--muted); line-height: 1.45; }
-.hero-side { display: grid; gap: 10px; justify-items: center; align-content: start; border-left: 1px solid var(--line); padding-top: 6px; padding-right: 0; padding-bottom: 6px; padding-left: 24px; }
+.hero-side { display: grid; gap: 10px; justify-items: center; align-content: start; padding-top: 6px; padding-right: 0; padding-bottom: 6px; padding-left: 24px; }
 .mini-plane { display: grid; gap: 10px; justify-items: center; }
 .mini-plane svg { filter: drop-shadow(0 8px 14px rgb(0 0 0 / .25)); }
 .mini-tag { font: 500 11px/1 var(--mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); border: 1px solid var(--line); border-radius: 999px; padding: 6px 12px; background: var(--panel-solid); }
@@ -236,5 +236,5 @@ body.flying #mapWrap { height: 100dvh; min-height: 0; border: 0; border-radius: 
   .steps { flex-direction: column; gap: 12px; }
   .steps li { padding: 0; }
   .steps li + li { border-left: 0; border-top: 1px solid var(--line); padding-top: 12px; }
-  .hero-side { order: -1; border-left: 0; border-top: 1px solid var(--line); padding: 16px 0 0; }
+  .hero-side { order: -1; border-left: 0; border-top: 0; padding: 16px 0 0; }
 }

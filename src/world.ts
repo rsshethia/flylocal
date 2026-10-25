@@ -170,8 +170,20 @@ export class World {
       });
       // Non-fatal style/tile errors surface here too — banner them, don't fail
       // init on the first transient error; the timeout above is the real guard.
+      // Blank error events (aborted fetches etc.) stay in the console only.
       this.map!.on('error', (e) => {
-        this.onError?.(`Mapbox notice: ${(e as { error?: { message?: string } })?.error?.message ?? 'unknown'}`);
+        const err = (e as { error?: { message?: string; status?: number; url?: string } })?.error;
+        const detail =
+          err?.message?.trim() ||
+          (typeof err?.status === 'number'
+            ? `tile request failed (HTTP ${err.status})${err.url ? ` — ${err.url}` : ''}`
+            : '');
+        if (!detail) {
+          console.debug('[map] unnamed error event', e);
+          return;
+        }
+        console.warn('[map]', detail);
+        this.onError?.(`Mapbox notice: ${detail}`);
       });
     });
     this.map.resize();

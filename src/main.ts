@@ -368,9 +368,16 @@ async function ensureMap(): Promise<void> {
     .finally(() => {
       mapLoading = null;
     });
+  let noticeTimer: number | null = null;
   world.onError = (msg) => {
     flyBanner.hidden = false;
+    flyBanner.className = 'flytoast warn';
     flyBanner.textContent = msg;
+    // Transient: don't let a stale notice stick over the gate forever.
+    if (noticeTimer !== null) window.clearTimeout(noticeTimer);
+    noticeTimer = window.setTimeout(() => {
+      if (flyBanner.textContent === msg) flyBanner.hidden = true;
+    }, 6000);
   };
   await mapLoading;
 }

@@ -8,14 +8,62 @@
 </head>
 <body>
   <header>
-    <h1>flylocal · M1 serial + input test · M2 arcade flight</h1>
-    <p>Connect a micro:bit (V1/V2, reference firmware <code>F1,seq,ax,ay,a,b</code> @ ~33 Hz). Fly view needs <code>VITE_MAPBOX_TOKEN</code> + internet.</p>
-    <div class="row">
-      <button id="tabTest">Test controller</button>
-      <button id="tabFly" class="secondary">Fly (Mapbox)</button>
+    <div class="brand">
+      <h1>flylocal</h1>
+      <p>Pixel flight over Bendigo, steered by tilting a micro:bit. <code>VITE_MAPBOX_TOKEN</code> + internet for the map.</p>
+    </div>
+    <div class="row" role="tablist" aria-label="Views">
+      <button id="tabHome" role="tab">Home</button>
+      <button id="tabFly" class="secondary" role="tab">Fly</button>
+      <button id="tabTest" class="secondary" role="tab">Controller setup</button>
     </div>
   </header>
-  <main id="viewTest">
+  <main id="viewHome">
+    <section class="panel hero">
+      <div class="hero-copy">
+        <h2 class="hero-title">Pick up the controller and fly.</h2>
+        <p class="lede">Tilt the micro:bit to bank and pitch a little two-seater over Bendigo. <b>B</b> climbs, <b>A</b> descends, hold flat to level out. No install, no account — one click and you&rsquo;re on the runway.</p>
+        <div class="row actions">
+          <button id="homeFly">Fly now</button>
+          <button id="homeSetup" class="secondary">Set up micro:bit</button>
+        </div>
+        <p class="kv" id="homeStatus">controller <b id="homeLink">not connected</b> · <span id="homeMap">map loads on first flight</span></p>
+        <ol class="steps">
+          <li><b>Hold it flat</b><span>cable pointing forward, screen up</span></li>
+          <li><b>Tilt to steer</b><span>right banks right, cable-end down pitches down</span></li>
+          <li><b>Press A</b><span>starts your turn from the gate</span></li>
+        </ol>
+        <p class="hint">No board handy? The keyboard flies too: <code>WASD</code> / arrows to tilt, <code>Q</code> down, <code>E</code> up. Controller setup is optional — only needed for the micro:bit.</p>
+      </div>
+      <div class="hero-side" aria-hidden="true">
+        <div class="mini-plane">
+          <svg viewBox="0 0 32 32" width="84" height="84" shape-rendering="crispEdges">
+            <rect x="9" y="1" width="14" height="1" fill="#454b54" />
+            <rect x="15" y="0" width="2" height="2" fill="#e05555" />
+            <rect x="14" y="2" width="4" height="2" fill="#e05555" />
+            <rect x="14" y="6" width="4" height="4" fill="#31404f" />
+            <rect x="14" y="10" width="4" height="3" fill="#f4f1ea" />
+            <rect x="4" y="14" width="24" height="1" fill="#2b2620" />
+            <rect x="2" y="15" width="4" height="3" fill="#e05555" />
+            <rect x="6" y="15" width="20" height="3" fill="#f4f1ea" />
+            <rect x="26" y="15" width="4" height="3" fill="#e05555" />
+            <rect x="14" y="19" width="4" height="4" fill="#f4f1ea" />
+            <rect x="15" y="23" width="2" height="6" fill="#e05555" />
+          </svg>
+          <span class="mini-tag">arcade · Bendigo</span>
+        </div>
+        <p class="kv">tilt <b id="homeTilt">—</b></p>
+      </div>
+    </section>
+  </main>
+  <main id="viewTest" hidden>
+    <section class="panel setup-head">
+      <div>
+        <h2 class="setup-title">Controller setup</h2>
+        <p class="hint">Optional. Only needed to connect a micro:bit over USB serial. Keyboard and simulator work without it.</p>
+      </div>
+      <button id="setupBack" class="secondary">Back home</button>
+    </section>
     <section class="panel">
       <div class="row">
         <button id="connectBtn">Connect micro:bit</button>
@@ -138,7 +186,7 @@
         <p id="gatePress">PRESS <b>A</b> TO FLY</p>
         <div class="row">
           <button id="flyStart">Start flight</button>
-          <button id="flyExitGate" class="secondary">Back to setup</button>
+          <button id="flyExitGate" class="secondary">Back home</button>
         </div>
         <p id="flyStatus" class="kv">map not loaded</p>
       </section>
@@ -165,7 +213,7 @@
           <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5L6 9H3v6h3l5 4V5z" /><path d="M15 9a4 4 0 0 1 0 6" /><line id="muteSlash" x1="3" y1="3" x2="21" y2="21" /></svg>
         </button>
         <hr />
-        <button id="flyExit" title="Back to setup" aria-label="Back to setup">
+        <button id="flyExit" title="Back home" aria-label="Back home">
           <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18" /></svg>
         </button>
       </nav>

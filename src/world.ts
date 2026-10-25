@@ -173,11 +173,18 @@ export class World {
       // Blank error events (aborted fetches etc.) stay in the console only.
       this.map!.on('error', (e) => {
         const err = (e as { error?: { message?: string; status?: number; url?: string } })?.error;
+        // Never print err.url: tile URLs carry the access token. Path only.
+        let safePath = '';
+        if (err?.url) {
+          try {
+            safePath = ` — ${new URL(err.url, window.location.href).pathname}`;
+          } catch {
+            safePath = '';
+          }
+        }
         const detail =
           err?.message?.trim() ||
-          (typeof err?.status === 'number'
-            ? `tile request failed (HTTP ${err.status})${err.url ? ` — ${err.url}` : ''}`
-            : '');
+          (typeof err?.status === 'number' ? `tile request failed (HTTP ${err.status})${safePath}` : '');
         if (!detail) {
           console.debug('[map] unnamed error event', e);
           return;

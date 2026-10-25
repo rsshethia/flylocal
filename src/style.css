@@ -144,7 +144,7 @@ header .row:last-child button:not(.secondary) { background: var(--accent); color
 
 #viewFly { max-width: none; }
 body.flying { overflow: hidden; }
-body.flying header, body.flying #viewTest { display: none; }
+body.flying header, body.flying #viewTest, body.flying #viewHome { display: none; }
 body.flying #viewFly { position: fixed; inset: 0; padding: 0; max-width: none; }
 body.flying main { padding: 0; margin: 0; max-width: none; }
 #mapWrap { position: relative; width: 100%; height: 62vh; min-height: 420px; overflow: hidden; border-radius: 12px; border: 1px solid var(--line); background: var(--ground); box-shadow: var(--shadow); }
@@ -199,6 +199,31 @@ body.flying #mapWrap { height: 100dvh; min-height: 0; border: 0; border-radius: 
 #map .mapboxgl-ctrl-attrib { transform: scale(calc(1 / var(--px-n, 4))); transform-origin: bottom right; }
 #map .mapboxgl-ctrl-logo { transform: scale(calc(1 / var(--px-n, 4))); transform-origin: bottom left; }
 .mapboxgl-ctrl-attrib a { color: var(--muted); }
+/* Home welcome: choice between flying now and (optional) controller setup. */
+#viewHome { max-width: 1080px; }
+.hero { display: grid; grid-template-columns: minmax(0, 1fr) 240px; gap: 24px; padding: 28px; align-items: start; }
+.hero-title { font: 600 30px/1.15 var(--sans); letter-spacing: -0.02em; margin: 10px 0 8px; text-wrap: balance; }
+.hero .lede { font-size: 15px; line-height: 1.6; max-width: 58ch; }
+.hero .lede b { color: var(--ink); }
+.actions { margin: 18px 0 12px; }
+#homeFly { height: 48px; padding: 0 28px; font-size: 15px; font-weight: 600; }
+#homeSetup { height: 48px; padding: 0 22px; font-size: 14px; }
+#homeStatus { margin: 4px 0 0; }
+.steps { list-style: none; display: flex; gap: 0; margin: 20px 0 4px; padding: 14px 0 0; border-top: 1px solid var(--line); counter-reset: step; }
+.steps li { flex: 1; display: grid; gap: 2px; padding: 2px 16px 2px 0; position: relative; counter-increment: step; align-content: start; }
+.steps li:first-child { padding-left: 0; }
+.steps li + li { border-left: 1px solid var(--line); padding-left: 20px; }
+.steps li::before { content: counter(step, decimal-leading-zero); font: 500 11px/1 var(--mono); color: var(--accent); letter-spacing: 0.08em; }
+.steps li b { font: 600 13px/1.4 var(--sans); color: var(--ink); }
+.steps li span { font-size: 12.5px; color: var(--muted); line-height: 1.45; }
+.hero-side { display: grid; gap: 10px; justify-items: center; align-content: start; border-left: 1px solid var(--line); padding-top: 6px; padding-right: 0; padding-bottom: 6px; padding-left: 24px; }
+.mini-plane { display: grid; gap: 10px; justify-items: center; }
+.mini-plane svg { filter: drop-shadow(0 8px 14px rgb(0 0 0 / .25)); }
+.mini-tag { font: 500 11px/1 var(--mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); border: 1px solid var(--line); border-radius: 999px; padding: 6px 12px; background: var(--panel-solid); }
+.setup-head { display: flex; gap: 16px; align-items: flex-start; justify-content: space-between; }
+.setup-title { font: 600 20px/1.25 var(--sans); letter-spacing: -0.01em; margin: 4px 0 4px; }
+.setup-head .hint { margin: 0; }
+.setup-head button { flex: none; }
 @media (max-width: 640px) {
   header { margin: 12px 12px 0; padding: 14px; }
   main { padding: 12px 12px 32px; }
@@ -206,4 +231,10 @@ body.flying #mapWrap { height: 100dvh; min-height: 0; border: 0; border-radius: 
   #linkPanel { font-size: 12px; gap: 8px; max-width: calc(100vw - 120px); }
   #flyGate { padding: 16px; width: min(340px, calc(100vw - 32px)); }
   #flyCredit { display: none; }
+  .hero { grid-template-columns: minmax(0, 1fr); padding: 20px; }
+  .hero-title { font-size: 24px; }
+  .steps { flex-direction: column; gap: 12px; }
+  .steps li { padding: 0; }
+  .steps li + li { border-left: 0; border-top: 1px solid var(--line); padding-top: 12px; }
+  .hero-side { order: -1; border-left: 0; border-top: 1px solid var(--line); padding: 16px 0 0; }
 }

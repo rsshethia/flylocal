@@ -84,6 +84,10 @@ const reader = new SerialReader({
   onState: (st, msg) => {
     els.status.textContent = `state=${st}${msg ? ` — ${msg}` : ''}`;
     els.status.dataset.state = st;
+    const homeLink = document.getElementById('homeLink');
+    if (homeLink) {
+      homeLink.textContent = st === 'connected' ? 'micro:bit connected' : st === 'lost' ? 'controller lost — check cable' : 'not connected';
+    }
     if (st === 'connected') {
       els.banner.hidden = true;
       els.connect.disabled = true;
@@ -179,7 +183,8 @@ input.onBothHold1s = () => {
 };
 input.onAPress = () => {
   els.aPressMsg.textContent = `A pressed at ${new Date().toLocaleTimeString()} (would start turn in IDLE)`;
-  if (!viewFly.hidden && !flying && !countingDown) void startFlight();
+  if (!viewHome.hidden && !flying && !countingDown) showTab('fly');
+  else if (!viewFly.hidden && !flying && !countingDown) void startFlight();
 };
 
 reader.watchHotplug();
@@ -244,22 +249,31 @@ function frame() {
   ] as const) {
     el.classList.toggle('on', on);
   }
+  const homeTilt = document.getElementById('homeTilt');
+  if (homeTilt && !viewHome.hidden) {
+    homeTilt.textContent = c.stale && !input.usingKeyboard ? 'no signal — keyboard ready' : `${c.roll >= 0 ? 'R' : 'L'}${Math.abs(c.roll).toFixed(2)} ${c.pitch >= 0 ? 'D' : 'U'}${Math.abs(c.pitch).toFixed(2)} · ${c.source}`;
+  }
   flyTick(now, c);
   requestAnimationFrame(frame);
 }
 requestAnimationFrame(frame);
 
-// ---- Tabs ----
+// ---- Tabs: Home (welcome) / Setup (optional micro:bit) / Fly ----
+const viewHome = $('viewHome');
 const viewTest = $('viewTest');
 const viewFly = $('viewFly');
+const tabHome = $('tabHome') as HTMLButtonElement;
 const tabTest = $('tabTest') as HTMLButtonElement;
 const tabFly = $('tabFly') as HTMLButtonElement;
-function showTab(which: 'test' | 'fly') {
+type View = 'home' | 'test' | 'fly';
+function showTab(which: View) {
   const isFly = which === 'fly';
   document.body.classList.toggle('flying', isFly);
-  viewTest.hidden = isFly;
+  viewHome.hidden = which !== 'home';
+  viewTest.hidden = which !== 'test';
   viewFly.hidden = !isFly;
-  tabTest.classList.toggle('secondary', isFly);
+  tabHome.classList.toggle('secondary', which !== 'home');
+  tabTest.classList.toggle('secondary', which !== 'test');
   tabFly.classList.toggle('secondary', !isFly);
   if (isFly) {
     $('flyGate').hidden = flying;
@@ -267,14 +281,18 @@ function showTab(which: 'test' | 'fly') {
     void ensureMap();
   }
 }
+tabHome.addEventListener('click', () => showTab('home'));
 tabTest.addEventListener('click', () => showTab('test'));
 tabFly.addEventListener('click', () => showTab('fly'));
+($('homeFly') as HTMLButtonElement).addEventListener('click', () => showTab('fly'));
+($('homeSetup') as HTMLButtonElement).addEventListener('click', () => showTab('test'));
+($('setupBack') as HTMLButtonElement).addEventListener('click', () => showTab('home'));
 ($('flyExit') as HTMLButtonElement).addEventListener('click', () => {
   stopFlight();
   if (document.fullscreenElement) void document.exitFullscreen().catch(() => {});
-  showTab('test');
+  showTab('home');
 });
-($('flyExitGate') as HTMLButtonElement).addEventListener('click', () => showTab('test'));
+($('flyExitGate') as HTMLButtonElement).addEventListener('click', () => showTab('home'));
 ($('flyFull') as HTMLButtonElement).addEventListener('click', () => {
   if (document.fullscreenElement) void document.exitFullscreen().catch(() => {});
   else void document.documentElement.requestFullscreen().catch(() => {});
@@ -340,8 +358,11 @@ async function ensureMap(): Promise<void> {
     return;
   }
   const token = (import.meta.env.VITE_MAPBOX_TOKEN as string | undefined) ?? '';
+  const homeMap = () => document.getElementById('homeMap');
   if (!token) {
     flyStatus.textContent = 'missing VITE_MAPBOX_TOKEN in .env';
+    const hm = homeMap();
+    if (hm) hm.textContent = 'map needs VITE_MAPBOX_TOKEN';
     flyBanner.hidden = false;
     flyBanner.textContent = 'No internet map: set VITE_MAPBOX_TOKEN in .env and restart dev server.';
     return;
@@ -359,9 +380,13 @@ async function ensureMap(): Promise<void> {
       flight.altMSL = g.elev + 80;
       world.follow(flight.lng, flight.lat);
       flyStatus.textContent = `map ready · terrain ${world.terrainUnknown ? 'pending' : 'ok'}`;
+      const hm = document.getElementById('homeMap');
+      if (hm) hm.textContent = 'map ready';
     })
     .catch((err) => {
       flyStatus.textContent = 'map failed';
+      const hm = document.getElementById('homeMap');
+      if (hm) hm.textContent = 'map failed to load';
       flyBanner.hidden = false;
       flyBanner.textContent = err instanceof Error ? err.message : String(err);
     })

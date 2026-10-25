@@ -1,0 +1,19 @@
+{
+  "name": "flylocal-m1-serial-input",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "micro:bit Flight Simulator — Milestone 1: serial + input test page",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "mapbox-gl": "^3.33.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.3",
+    "vite": "^6.0.0"
+  }
+}

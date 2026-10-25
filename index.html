@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>flylocal — M1 serial + input test</title>
+  <link rel="stylesheet" href="/src/style.css" />
+</head>
+<body>
+  <header>
+    <h1>flylocal · M1 serial + input test · M2 arcade flight</h1>
+    <p>Connect a micro:bit (V1/V2, reference firmware <code>F1,seq,ax,ay,a,b</code> @ ~33 Hz). Fly view needs <code>VITE_MAPBOX_TOKEN</code> + internet.</p>
+    <div class="row">
+      <button id="tabTest">Test controller</button>
+      <button id="tabFly" class="secondary">Fly (Mapbox)</button>
+    </div>
+  </header>
+  <main id="viewTest">
+    <section class="panel">
+      <div class="row">
+        <button id="connectBtn">Connect micro:bit</button>
+        <button id="disconnectBtn" class="secondary" disabled>Disconnect</button>
+        <span id="status" data-state="disconnected">state=disconnected</span>
+      </div>
+      <div id="banner" hidden></div>
+      <p class="hint">Must be a user click (Web Serial requirement). Page must be HTTPS or <code>localhost</code>. Filter: VID <code>0x0D28</code>.</p>
+      <div class="row">
+        <label><input type="checkbox" id="simInput" /> simulator (no hardware)</label>
+        <label><input type="checkbox" id="simAx" checked /> sim ax</label>
+        <label><input type="checkbox" id="simAy" checked /> sim ay</label>
+      </div>
+    </section>
+
+    <div class="grid">
+      <section class="panel">
+        <h2>Live tilt</h2>
+        <div class="row">
+          <div id="tiltPad"><div id="tiltDot"></div></div>
+          <div class="kv">
+            <div>raw ax <b id="rawAx">—</b> mg · ay <b id="rawAy">—</b> mg</div>
+            <div>seq <b id="seq">—</b> · <b id="hz">0.0</b> Hz · dropped <b id="dropped">0</b> · malformed <b id="malformed">0</b></div>
+            <div>roll <b id="rollVal">0.00</b></div>
+            <div class="meter"><div id="rollBar"></div></div>
+            <div>pitch <b id="pitchVal">0.00</b></div>
+            <div class="meter"><div id="pitchBar"></div></div>
+            <div>throttle <b id="thrVal">50%</b></div>
+            <div class="meter"><div id="thrFill"></div></div>
+          </div>
+        </div>
+        <p class="hint">Hold flat, USB cable pointing forward. Tilt left/right = roll, cable-end down/up = pitch.</p>
+      </section>
+
+      <section class="panel">
+        <h2>Buttons</h2>
+        <div class="row">
+          <span id="btnA" class="pill">A</span>
+          <span id="btnB" class="pill">B</span>
+          <span id="btnLogo" class="pill">logo</span>
+        </div>
+        <p id="bothMsg" class="kv"></p>
+        <p id="aPressMsg" class="kv"></p>
+        <p class="hint">Hold A+B 1 s = cycle model shortcut (throttle suppressed while both down). A press = start turn in IDLE. Logo = V2 only, optional.</p>
+      </section>
+    </div>
+
+    <section class="panel">
+      <h2>Calibration + tilt test</h2>
+      <div class="row">
+        <button id="calBtn" class="secondary">Hold flat → calibrate (1 s)</button>
+        <span id="calState" class="kv">not calibrated (neutral 0,0)</span>
+      </div>
+      <div class="row">
+        <button id="tiltTestBtn" class="secondary">Run tilt test</button>
+        <span id="tiltTestOut" class="kv"></span>
+      </div>
+      <div class="row">
+        <label><input type="checkbox" id="invRoll" /> invert roll</label>
+        <label><input type="checkbox" id="invPitch" /> invert pitch</label>
+        <label>dead zone <input type="range" id="deadzone" min="0" max="50" step="1" /> <span id="dzVal">8%</span></label>
+        <label>full deflection <input type="range" id="sens" min="200" max="1024" step="1" /> <span id="sensVal">658 mg</span></label>
+      </div>
+      <p class="hint">Defaults: dead zone ±8 %, full deflection 658 mg (≈40°). Settings persist in localStorage. Keyboard fallback: arrows/WASD tilt, Q/E throttle.</p>
+    </section>
+
+    <section class="panel">
+      <h2>Raw lines</h2>
+      <div id="rawLog"></div>
+    </section>
+  </main>
+  <main id="viewFly" hidden>
+    <div id="mapWrap">
+      <div id="map"></div>
+      <div id="vignette" aria-hidden="true"></div>
+      <div id="planeShadow" aria-hidden="true"></div>
+      <div id="plane" title="aircraft">
+        <svg viewBox="0 0 32 32" width="112" height="112" aria-hidden="true" shape-rendering="crispEdges">
+          <g id="propA"><rect x="9" y="1" width="14" height="1" fill="#454b54" /></g>
+          <g id="propB" style="display:none"><rect x="11" y="1" width="10" height="1" fill="#aeb6bf" /></g>
+          <rect x="15" y="0" width="2" height="2" fill="#e05555" />
+          <rect x="14" y="2" width="4" height="2" fill="#e05555" />
+          <rect x="13" y="2" width="1" height="22" fill="#2b2620" />
+          <rect x="18" y="2" width="1" height="22" fill="#2b2620" />
+          <rect x="14" y="3" width="4" height="3" fill="#f4f1ea" />
+          <rect x="14" y="6" width="4" height="4" fill="#31404f" />
+          <rect x="14" y="6" width="1" height="1" fill="#cfe3f5" />
+          <rect x="14" y="10" width="4" height="3" fill="#f4f1ea" />
+          <rect x="14" y="13" width="4" height="1" fill="#e05555" />
+          <rect x="4" y="14" width="24" height="1" fill="#2b2620" />
+          <rect x="2" y="15" width="4" height="3" fill="#e05555" />
+          <rect x="6" y="15" width="20" height="3" fill="#f4f1ea" />
+          <rect x="26" y="15" width="4" height="3" fill="#e05555" />
+          <rect x="4" y="18" width="24" height="1" fill="#2b2620" />
+          <rect x="14" y="19" width="4" height="4" fill="#f4f1ea" />
+          <rect x="9" y="23" width="14" height="1" fill="#2b2620" />
+          <rect x="9" y="24" width="2" height="2" fill="#e05555" />
+          <rect x="11" y="24" width="10" height="2" fill="#f4f1ea" />
+          <rect x="21" y="24" width="2" height="2" fill="#e05555" />
+          <rect x="9" y="26" width="14" height="1" fill="#2b2620" />
+          <rect x="15" y="23" width="2" height="6" fill="#e05555" />
+          <rect x="14" y="24" width="1" height="4" fill="#2b2620" />
+          <rect x="17" y="24" width="1" height="4" fill="#2b2620" />
+          <rect x="15" y="29" width="2" height="1" fill="#2b2620" />
+        </svg>
+      </div>
+      <div id="countdown" hidden></div>
+      <div id="flyHud" class="kv float" role="status" aria-label="Flight instruments">
+        <span>spd <b id="hSpd">—</b></span>
+        <span>agl <b id="hAgl">—</b></span>
+        <span>hdg <b id="hHdg">—</b></span>
+        <span>climb <b id="hClimb">—</b></span>
+        <span>model <b>arcade</b></span>
+        <span>link <b id="hLink">—</b></span>
+      </div>
+      <div id="flyBanner" class="flytoast" hidden></div>
+      <section id="flyGate" class="float" aria-label="Start flying">
+        <h2>Ready to fly</h2>
+        <p>Hold the micro:bit flat, cable pointing forward. Tilt to steer — the plane follows your tilt on screen. B climbs, A descends.</p>
+        <p id="gatePress">PRESS <b>A</b> TO FLY</p>
+        <div class="row">
+          <button id="flyStart">Start flight</button>
+          <button id="flyExitGate" class="secondary">Back to setup</button>
+        </div>
+        <p id="flyStatus" class="kv">map not loaded</p>
+      </section>
+      <aside id="linkPanel" class="kv float" aria-label="Controller link">
+        <canvas id="mini" width="96" height="96" aria-label="Play area overview"></canvas>
+        <span>link <b id="lpLink">—</b></span>
+        <span>tilt <b id="lpTilt">—</b></span>
+        <label class="px">pixel <input type="range" id="pixelN" min="2" max="6" step="1" value="4" /> <b id="pixelNVal">4</b></label>
+        <span id="flyCal">neutral 0,0</span>
+      </aside>
+      <nav id="flyRail" class="float" aria-label="Flight controls">
+        <span id="flyCompass" role="img" aria-label="North is up and to the left"><b>N</b><i></i></span>
+        <hr />
+        <button id="flyReset" title="Reset to start" aria-label="Reset to start">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 12a9 9 0 1 0 3-6.7" /><path d="M3 4v5h5" /></svg>
+        </button>
+        <button id="flyCalBtn" title="Recalibrate: hold flat" aria-label="Recalibrate: hold flat">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="7" /><circle cx="12" cy="12" r="1.6" fill="currentColor" stroke="none" /><path d="M12 2v3M12 19v3M2 12h3M19 12h3" /></svg>
+        </button>
+        <button id="flyFull" title="Fullscreen (F)" aria-label="Fullscreen">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" /></svg>
+        </button>
+        <button id="flyMute" title="Engine sound on/off" aria-label="Engine sound on/off" aria-pressed="true">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5L6 9H3v6h3l5 4V5z" /><path d="M15 9a4 4 0 0 1 0 6" /><line id="muteSlash" x1="3" y1="3" x2="21" y2="21" /></svg>
+        </button>
+        <hr />
+        <button id="flyExit" title="Back to setup" aria-label="Back to setup">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18" /></svg>
+        </button>
+      </nav>
+      <span id="flyCredit">Bendigo · arcade</span>
+    </div>
+  </main>
+  <script type="module" src="/src/main.ts"></script>
+</body>
+</html>

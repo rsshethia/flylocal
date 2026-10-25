@@ -21,7 +21,6 @@ const FLAT_STYLE = {
   sources: {
     streets: { type: 'vector', url: 'mapbox://mapbox.mapbox-streets-v8' },
     dem: { type: 'raster-dem', url: 'mapbox://mapbox.mapbox-terrain-dem-v1', tileSize: 512, maxzoom: 14 },
-    terrainVec: { type: 'vector', url: 'mapbox://mapbox.mapbox-terrain-v2' },
   },
   terrain: { source: 'dem', exaggeration: 1.3 },
   layers: [
@@ -48,11 +47,6 @@ const FLAT_STYLE = {
     // Water
     { id: 'water', type: 'fill', source: 'streets', 'source-layer': 'water', paint: { 'fill-color': '#55a3e0', 'fill-outline-color': '#3d7cb4' } },
     { id: 'waterway', type: 'line', source: 'streets', 'source-layer': 'waterway', paint: { 'line-color': '#55a3e0', 'line-width': 2 } },
-    // Thin topo contours for a hand-drawn feel.
-    {
-      id: 'contour', type: 'line', source: 'terrainVec', 'source-layer': 'contour',
-      paint: { 'line-color': '#8a6f4d', 'line-width': 1, 'line-opacity': 0.4 },
-    },
     // Roads: dark casing under a light fill on majors; narrow singles elsewhere.
     {
       id: 'road-major-casing', type: 'line', source: 'streets', 'source-layer': 'road',

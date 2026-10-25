@@ -9,4 +9,10 @@ export default defineConfig({
     host: 'localhost',
     port: 5173,
   },
+  preview: {
+    // PaaS containers receive the public hostname in the Host header;
+    // Vite 6 blocks unknown hosts, so allow-list the Render domain.
+    host: '0.0.0.0',
+    allowedHosts: ['.onrender.com'],
+  },
 });

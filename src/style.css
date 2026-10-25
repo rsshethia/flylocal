@@ -10,7 +10,7 @@
 }
 :root {
   color-scheme: light;
-  /* tinygyn ground system: cool slate neutrals, one terracotta accent from the roofs. */
+  /* Light ground system: cool slate neutrals, one terracotta accent from the roofs. */
   --ground: #e4e8e6;
   --ink: #161b1e;
   --muted: #59656a;
@@ -60,7 +60,7 @@ body {
 ::selection { background: var(--accent); color: var(--accent-ink); }
 button:focus-visible, input:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
-/* Welcome header: tinygyn-style top panel, centered column. */
+/* Welcome header: floating top panel, centered column. */
 header {
   max-width: 1080px;
   margin: 16px auto 0;
@@ -89,7 +89,7 @@ h2 { font: 600 13px/1.3 var(--sans); letter-spacing: 0.02em; color: var(--ink); 
 @media (prefers-reduced-transparency: reduce) { .panel, header { background: var(--panel-solid); backdrop-filter: none; } }
 .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
 
-/* tinygyn buttons: full pill, one accent. */
+/* Buttons: full pill, one accent. */
 button {
   height: 36px; padding: 0 16px; border-radius: 999px;
   border: 1px solid var(--accent); background: var(--accent); color: var(--accent-ink);
@@ -132,7 +132,7 @@ input[type="checkbox"] { accent-color: var(--accent); }
 code { font-family: var(--mono); font-size: 12px; background: color-mix(in srgb, var(--ink) 6%, transparent); padding: 1px 6px; border-radius: 6px; }
 a { color: var(--accent); text-underline-offset: 3px; }
 
-/* Tabs as tinygyn segmented control. */
+/* Tabs as a segmented control. */
 header .row:last-child {
   display: inline-grid; grid-auto-flow: column; gap: 3px;
   padding: 3px; border: 1px solid var(--line); border-radius: 999px;

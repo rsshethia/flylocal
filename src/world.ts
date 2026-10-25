@@ -12,7 +12,7 @@ export interface WorldOptions {
 
 const DEFAULTS: WorldOptions = { pixelN: 4, zoom: 15.2, bearing: 45, pitch: 55 };
 
-// Flat tinygyn-style basemap, built in code (no Studio needed).
+// Flat pixel-art basemap, built in code (no Studio needed).
 // Vector tiles from Mapbox Streets v8, zero labels, solid fills, extruded blocks.
 // Glyphs/sprites omitted — there are no symbol layers.
 const FLAT_STYLE = {

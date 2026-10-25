@@ -31,7 +31,7 @@ A browser-based flight simulator for demos and showcases (for example school eve
 - Map engine: Mapbox GL JS, accepting that it needs internet.
 - Session style: timed turns (default 2 minutes) with auto-reset for the next person.
 
-* Visual style: live Mapbox rendering with an isometric pixel-art look, inspired by tinygyn.com. Not pre-generated art tiles. No chase-camera view: isometric only.
+* Visual style: live Mapbox rendering with an isometric pixel-art look, inspired by hand-drawn isometric pixel-art maps. Not pre-generated art tiles. No chase-camera view: isometric only.
 
 - Look and feel: pixel size 4 (480 × 270 art pixels on a 1080p screen), a 24-colour natural palette, flat three-tone building shading plus a ground shadow, no dithering, daytime only, about 1 to 2 km across the screen, aircraft about 24 to 32 art pixels wide.
 - Aircraft: a small two-seater light plane.
@@ -223,7 +223,7 @@ When switching model, keep position and heading, and re-initialise speed to a sa
 
 ### 8.6 Isometric pixel-art look (the only view)
 
-The only view is a fixed isometric camera over a pixelated, flat-colour map. It is rendered live by Mapbox, so detail will be simpler than tinygyn.com, whose art appears to be pre-generated tile by tile and then viewed as a flat image map.
+The only view is a fixed isometric camera over a pixelated, flat-colour map. It is rendered live by Mapbox, so detail will be simpler than pre-generated tile art, which is typically drawn tile by tile and then viewed as a flat image map.
 
 - **Camera.** Fixed pitch of about 55° and bearing of 45° (a true isometric elevation is about 35.3°, which is a Mapbox pitch of about 54.7°). Zoom is fixed. The camera follows the aircraft's ground position with smoothing. It does not chase behind the plane, so there is no chase camera.
 - **Projection caveat.** Mapbox GL JS uses a perspective camera, so true orthographic isometric is not guaranteed. A distant camera with a narrow field of view approximates it. Confirm in the prototype.

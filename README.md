@@ -17,7 +17,7 @@ npm install
 npm run dev        # open http://localhost:5173
 ```
 
-Copy `.env.example` to `.env` and add a Mapbox public token to unlock the
+Create a `.env` file with a Mapbox public token to unlock the
 Fly tab (the map needs internet — Mapbox streams its tiles live):
 
 ```

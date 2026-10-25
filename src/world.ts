@@ -12,6 +12,26 @@ export interface WorldOptions {
 
 const DEFAULTS: WorldOptions = { pixelN: 4, zoom: 15.2, bearing: 45, pitch: 55 };
 
+const DEM_TILEJSON = 'https://api.mapbox.com/v4/mapbox.mapbox-terrain-dem-v1.json?secure';
+
+/** Preflight: can this token actually fetch elevation? Fail open to flat mode. */
+async function demAvailable(token: string): Promise<boolean> {
+  try {
+    const ctrl = new AbortController();
+    const t = window.setTimeout(() => ctrl.abort(), 8000);
+    const res = await fetch(`${DEM_TILEJSON}&access_token=${token}`, { signal: ctrl.signal });
+    window.clearTimeout(t);
+    if (!res.ok) {
+      console.info('[map] DEM unavailable, HTTP', res.status, '— flat fallback');
+      return false;
+    }
+    return true;
+  } catch (err) {
+    console.info('[map] DEM preflight failed — flat fallback', err);
+    return false;
+  }
+}
+
 // Flat pixel-art basemap, built in code (no Studio needed).
 // Vector tiles from Mapbox Streets v8, zero labels, solid fills, extruded blocks.
 // Glyphs/sprites omitted — there are no symbol layers.
@@ -20,9 +40,7 @@ const FLAT_STYLE = {
   name: 'flylocal-flat',
   sources: {
     streets: { type: 'vector', url: 'mapbox://mapbox.mapbox-streets-v8' },
-    dem: { type: 'raster-dem', url: 'mapbox://mapbox.mapbox-terrain-dem-v1', tileSize: 512, maxzoom: 14 },
   },
-  terrain: { source: 'dem', exaggeration: 1.3 },
   layers: [
     { id: 'bg', type: 'background', paint: { 'background-color': '#7cc46f' } },
     // Vegetation / ground cover
@@ -42,8 +60,6 @@ const FLAT_STYLE = {
     { id: 'lu-pitch', type: 'fill', source: 'streets', 'source-layer': 'landuse', filter: ['==', 'class', 'pitch'], paint: { 'fill-color': '#a5d67e' } },
     { id: 'lu-stadium', type: 'fill', source: 'streets', 'source-layer': 'landuse', filter: ['==', 'class', 'stadium'], paint: { 'fill-color': '#b9bd8f' } },
     { id: 'aeroway', type: 'fill', source: 'streets', 'source-layer': 'aeroway', paint: { 'fill-color': '#cfc8b8' } },
-    // Soft relief over the flats, under everything drawn next.
-    { id: 'hillshade', type: 'hillshade', source: 'dem', paint: { 'hillshade-exaggeration': 0.35, 'hillshade-shadow-color': '#4e5d43' } },
     // Water
     { id: 'water', type: 'fill', source: 'streets', 'source-layer': 'water', paint: { 'fill-color': '#55a3e0', 'fill-outline-color': '#3d7cb4' } },
     { id: 'waterway', type: 'line', source: 'streets', 'source-layer': 'waterway', paint: { 'line-color': '#55a3e0', 'line-width': 2 } },
@@ -87,7 +103,19 @@ const FLAT_STYLE = {
   ],
 };
 
+// DEM-only dressing, injected when the token is allowed to fetch elevation.
+const DEM_SOURCE = { type: 'raster-dem', url: 'mapbox://mapbox.mapbox-terrain-dem-v1', tileSize: 512, maxzoom: 14 };
+const HILLSHADE_LAYER = { id: 'hillshade', type: 'hillshade', source: 'dem', paint: { 'hillshade-exaggeration': 0.35, 'hillshade-shadow-color': '#4e5d43' } };
+
+type FlatStyle = {
+  sources: Record<string, unknown>;
+  terrain?: unknown;
+  layers: Array<Record<string, unknown>>;
+};
+
 export class World {
+  /** ~Bendigo CBD ground level. Used only when DEM tiles are blocked. */
+  private static readonly FALLBACK_GROUND = 220;
   private map: mapboxgl.Map | null = null;
   private outer: HTMLElement;
   private inner: HTMLElement;
@@ -95,6 +123,7 @@ export class World {
   private smooth: { lng: number; lat: number } | null = null;
   private lastElev = 250;
   private elevUnknown = true;
+  private demOk = true;
   private ready = false;
   onError: ((msg: string) => void) | null = null;
 
@@ -119,11 +148,20 @@ export class World {
   async init(token: string, spawn = BENDIGO.spawn): Promise<void> {
     if (!token) throw new Error('Missing Mapbox token (VITE_MAPBOX_TOKEN).');
     mapboxgl.accessToken = token;
+    this.demOk = await demAvailable(token);
     this.layout();
+
+    const style = JSON.parse(JSON.stringify(FLAT_STYLE)) as FlatStyle;
+    if (this.demOk) {
+      style.sources.dem = DEM_SOURCE;
+      style.terrain = { source: 'dem', exaggeration: 1.3 };
+      const at = style.layers.findIndex((l) => l.id === 'aeroway');
+      style.layers.splice(at + 1, 0, HILLSHADE_LAYER as Record<string, unknown>);
+    }
 
     this.map = new mapboxgl.Map({
       container: this.inner,
-      style: FLAT_STYLE as never,
+      style: style as never,
       center: [spawn.lng, spawn.lat],
       zoom: this.opts.zoom,
       pitch: this.opts.pitch,
@@ -218,6 +256,8 @@ export class World {
   }
 
   groundElev(lng: number, lat: number): { elev: number; unknown: boolean } {
+    // No DEM access: fixed local ground estimate keeps arcade altitude logic alive.
+    if (!this.demOk) return { elev: World.FALLBACK_GROUND, unknown: false };
     if (!this.map || !this.ready) return { elev: this.lastElev, unknown: true };
     try {
       const v = this.map.queryTerrainElevation([lng, lat], { exaggerated: false });
